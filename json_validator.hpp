@@ -245,7 +245,12 @@ struct JsonParser
             return true;
 
         storeLast();
-        return parseValue();
+        if (!parseValue())
+            return false;
+
+        if (nextToken().type != JsonToken::END_OF_STREAM)
+            return false;
+        return true;
     }
 
 private:
