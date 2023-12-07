@@ -12,8 +12,6 @@
 // où a été observé le token dans le flux d'entrée, je choisis
 // une structure simple munie d'une énumération.
 //
-// TODO: les valeurs sont temporaires, pour me faire une idée.
-
 struct JsonToken
 {
     enum Type {
@@ -33,6 +31,10 @@ struct JsonToken
     };
 
     Type type;
+
+    // on pourra au besoin rajouter ici un champs std::string
+    // qui servira au tokens qui embarquent une valeur, comme
+    // les STRING_VALUE, NUMBER_VALUE ou BOOLEAN_VALUE.
 };
 
 
@@ -226,6 +228,74 @@ private:
     static bool isDigit(char c) {
         return '0' <= c && c <= '9';
     }
+};
+
+
+// Je propose ici un parseur (simplement validant, et ne créant pas un DOM).
+// De la même façon que pour la classe JsonTokenReader, on lira les tokens
+// et on procédera à la validation du JSON.  On écartera les JsonToken::WHITESPACE.
+//
+struct JsonParser
+{
+    JsonParser(JsonTokenReader& input)
+    : tokenReader(input), value(), stored(false) {}
+
+    bool validate();
+
+private:
+    bool parseValue() {
+        switch (nextToken().type) {
+            case JsonToken::NULL_VALUE:
+            case JsonToken::BOOLEAN_VALUE:
+            case JsonToken::NUMBER_VALUE:
+            case JsonToken::STRING_VALUE:
+                return true;
+
+            case JsonToken::ARRAY_START:
+                storeLast();
+                return parseArray();
+
+            case JsonToken::OBJECT_START:
+                storeLast();
+                return parseObject();
+
+            default:
+                return false;
+        }
+    }
+
+    bool parseArray() {
+        if (nextToken().type != JsonToken::ARRAY_START)
+            return false;
+
+        while (nextToken().type != JsonToken::ARRAY_END) {
+            storeLast();
+
+            do {
+                if (!parseValue())
+                    return false;
+            } while (nextToken().type == JsonToken::COMMA);
+
+            // TODO: édition en cours
+    }
+
+private:
+    JsonToken nextToken() {
+        if (stored) {
+            stored = false;
+            return value;
+        }
+        while (true) {
+            value = tokenReader.nextToken();
+            if (value.type != JsonToken::WHITESPACE)
+                break;
+        }
+        return value;
+    }
+
+    JsonTokenReader& tokenReader;
+    JsonToken value;
+    bool stored;
 };
 
 #endif  // JSON_VALIDATOR_HPP_INCLUDED
