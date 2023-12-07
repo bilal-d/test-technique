@@ -118,10 +118,31 @@ struct JsonTokenReader {
             consumeWhitespace();
             return { JsonToken::WHITESPACE };
 
+        case '"':
+            if (readString())
+                return { JsonToken::STRING_VALUE };
+            return { JsonToken::UNEXPECTED };
+
+        case '0': case '1': case '2': case '3':
+        case '4': case '5': case '6': case '7':
+        case '8': case '9': case '+': case '-':
+            charReader.storeLast();
+            if (readNumber())
+                return { JsonToken::NUMBER_VALUE };
+            return {JsonToken::UNEXPECTED };
+
             // TODO: énumération incomplète, il reste encore à détecter et à valider
             // les types de tokens suivants:
             // - string
             // - number
+            // Par manque de temps, je me limite à une syntaxe très réduite, que l'on peut
+            // bien sûr étendre pour parser du vrai JSON (les modifications se feront sur
+            // l'analyseur lexical seulement).
+            //
+            // Pour les strings: je ne prends pas en charge les séquences d'échappement,
+            // je commence et je m'arrête au symbol « " »
+            // Pour les numbers: je prends en charge que les entiers, munis optionellement
+            // d'un signe.
         }
 
         return { JsonToken::UNEXPECTED };
@@ -137,19 +158,67 @@ private:
         }
         return true;
     }
+
+    bool readString() {
+        while (charReader.advance()) {
+            if (charReader.current() == '\"')
+                return true;
+        }
+        return false;
+    }
+
+    bool readNumber() {
+        if (!(readNumberDigit() || readNumberSign()))
+            return false;
+
+        while (readNumberDigit()) {
+            // TODO: stocker les digits en vue de les convertir en nombre
+            // pour un usage ultérieur, et d'effectuer des vérifications supplémentaires.
+        }
+        return true;
+    }
+
+    bool readNumberSign() {
+        if (!charReader.advance())
+            return false;
+
+        if (charReader.current() == '+' || charReader.current() == '-')
+            return true;
+
+        charReader.storeLast();
+        return false;
+    }
+
+    bool readNumberDigit() {
+        while (!charReader.advance())
+            return false;
+
+        if (isDigit(charReader.current()))
+            return true;
+
+        charReader.storeLast();
+        return false;
+    }
+
     void consumeWhitespace() {
         // tant que l'on peut lire des caractères blanc, on poursuivra
         // la lecture.  On s'arrête si le flux est épuisé, ou si le
         // dernier caractère lu n'est pas blanc.  Dans ce cas on garde
         // ce caractère pour une lecture ultérieur; on ne le consomme pas.
         while (charReader.advance()) {
-            char const c = charReader.current();
-            if (c == ' ' || c == '\t' || c == '\r' || c == '\n')
+            if (isWhiteSpace(charReader.current()))
                 continue;
 
             charReader.storeLast();
             break;
         }
+    }
+
+    static bool isWhiteSpace(char c) {
+        return c == ' ' || c == '\t' || c == '\r' || c == '\n';
+    }
+    static bool isDigit(char c) {
+        return '0' <= c && c <= '9';
     }
 };
 
