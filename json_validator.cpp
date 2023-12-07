@@ -46,12 +46,28 @@ struct JsonToken
 // provenance d'une connexion réseau).
 //
 struct JsonCharReader {
-    std::function<bool (char&)> supply;
-    char current;
+    JsonCharReader(std::function<bool (char&)> input) :
+    supply(input), value('\0'), stored(false) {}
+
+    char current() {
+        return value;
+    }
+
+    void storeLast() {
+        stored = true;
+    }
 
     bool advance() {
-        return supply(current);
+        if (!stored)
+            return supply(value);
+        stored = false;
+        return true;
     }
+
+private:
+    std::function<bool (char&)> supply;
+    char value;
+    bool stored;
 };
 
 
@@ -63,8 +79,50 @@ struct JsonTokenReader {
     JsonCharReader& charReader;
 
     JsonToken nextToken() {
-        // TODO
+        if (!charReader.advance())
+            return { JsonToken::END_OF_STREAM };
+
+        switch (charReader.current()) {
+        case '{': return { JsonToken::OBJECT_START };
+        case '}': return { JsonToken::OBJECT_END };
+        case '[': return { JsonToken::ARRAY_START };
+        case ']': return { JsonToken::ARRAY_END };
+        case ':': return { JsonToken::COLON };
+        case ',': return { JsonToken::COMMA };
+
+        case 't':
+            charReader.storeLast();
+            if (readLitteral("true"))
+                return { JsonToken::BOOLEAN_VALUE };
+            return { JsonToken::UNEXPECTED };
+
+        case 'f':
+            charReader.storeLast();
+            if (readLitteral("false"))
+                return { JsonToken::BOOLEAN_VALUE };
+            return { JsonToken::UNEXPECTED };
+
+        case 'n':
+            charReader.storeLast();
+            if (readLitteral("null"))
+                return { JsonToken::NULL_VALUE };
+            return { JsonToken::UNEXPECTED };
+
+            // TODO: énumération incomplète
+        }
+
         return { JsonToken::UNEXPECTED };
+    }
+
+private:
+    bool readLitteral(std::string_view litteral) {
+        for (char character : litteral) {
+            if (!charReader.advance())
+                return false;
+            if (charReader.current() != character)
+                return false;
+        }
+        return true;
     }
 };
 
