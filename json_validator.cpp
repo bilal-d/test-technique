@@ -3,6 +3,12 @@
 
 int main(int, char*[])
 {
-    std::cout << "not implemented\n";
-    return 0;
+    JsonCharReader charReader([&](char& c) {
+        return bool(std::cin.get(c));
+    });
+    JsonTokenReader tokenReader(charReader);
+    JsonParser parser(tokenReader);
+
+    bool const validated = parser.validate();
+    std::cout << (validated ? "vrai" : "faux") << "\n";
 }

@@ -240,7 +240,13 @@ struct JsonParser
     JsonParser(JsonTokenReader& input)
     : tokenReader(input), value(), stored(false) {}
 
-    bool validate();
+    bool validate() {
+        if (nextToken().type == JsonToken::END_OF_STREAM)
+            return true;
+
+        storeLast();
+        return parseValue();
+    }
 
 private:
     bool parseValue() {
@@ -275,8 +281,36 @@ private:
                 if (!parseValue())
                     return false;
             } while (nextToken().type == JsonToken::COMMA);
+            storeLast();
+        }
+        return true;
+    }
 
-            // TODO: édition en cours
+    bool parseObject() {
+        if (nextToken().type != JsonToken::OBJECT_START)
+            return false;
+
+        while (nextToken().type != JsonToken::OBJECT_END) {
+            storeLast();
+
+            do {
+                if (!parseKeyValue())
+                    return false;
+            } while (nextToken().type == JsonToken::COMMA);
+            storeLast();
+        }
+        return true;
+    }
+
+    bool parseKeyValue() {
+        if (nextToken().type != JsonToken::STRING_VALUE)
+            return false;
+        if (nextToken().type != JsonToken::COLON)
+            return false;
+        if (!parseValue())
+            return false;
+
+        return true;
     }
 
 private:
@@ -291,6 +325,10 @@ private:
                 break;
         }
         return value;
+    }
+
+    void storeLast() {
+        stored = true;
     }
 
     JsonTokenReader& tokenReader;
