@@ -108,7 +108,11 @@ struct JsonTokenReader {
                 return { JsonToken::NULL_VALUE };
             return { JsonToken::UNEXPECTED };
 
-            // TODO: énumération incomplète
+            // TODO: énumération incomplète, il reste encore à détecter et à valider
+            // les types de tokens suivants:
+            // - string
+            // - number
+            // - whitespace
         }
 
         return { JsonToken::UNEXPECTED };
