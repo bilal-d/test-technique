@@ -47,3 +47,29 @@ code en question fonctionne comme souhaité.  Quelques tests s'avéreront extrê
 
 Je mets les parties en commun dans un en-tête, disons "json_validator.hpp", et j'implémente
 quelques tests dans des programmes comme "test_char_reader.cpp" et "test_json_lexer.cpp".
+
+---
+
+Quelques remarques pour la suite de l'exercice :
+
+* le traitement des séquences d'échappement dans les chaînes de caractères nécessite
+la conversion depuis un codepoint unicode vers une séquence d'octets encodée en UTF-8
+(pour les séquences du type \u1234 par exemple)
+
+* la validation utilise une récursion, qui peut s'avérer *dangeureuse* pour le parseur en
+consommant sans limite la pile mémoire.  Pour les entrées du type [[[[ ... ]]]], chaque
+sous-élément de type tableau rajoute un couple d'entrées parseValue/parseArray à la callstack.
+Cela doit être limité, soit en incorporant un compteur de profondeur qui rejette le
+parsing si le niveau de nesting maximal est atteint, soit en tentant de convertir les
+appels récursifs en boucle associée à une pile de travail (std::stack).
+
+* les nombres en JSON ne peuvent pas commencer par le signe +, contrairement à ce que
+j'ai implémenté.  Vérification faite dans une console du navigateur:
+
+> Json.parse('+1')
+Uncaught SyntaxError: Unexpected token '+', "+1" is not valid JSON
+    at JSON.parse (<anonymous>)
+    at <anonymous>:1:6
+
+Cela reste donc à corriger.  Je pense que je peux utiliser wstring_convert (disponible dans
+la bibliothèque standard, mais cela a été déprécié depuis le C++17).
