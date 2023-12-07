@@ -168,7 +168,13 @@ private:
     }
 
     bool readNumber() {
-        if (!(readNumberDigit() || readNumberSign()))
+        if (readNumberSign()) {
+            // TODO: le nombre commence par un signe, le conserver pour le conversion
+            // ultérieurement
+        }
+
+        // au moins un digit doit suivre
+        if (!readNumberDigit())
             return false;
 
         while (readNumberDigit()) {
