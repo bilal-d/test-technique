@@ -111,11 +111,17 @@ struct JsonTokenReader {
                 return { JsonToken::NULL_VALUE };
             return { JsonToken::UNEXPECTED };
 
+        case ' ':
+        case '\t':
+        case '\r':
+        case '\n':
+            consumeWhitespace();
+            return { JsonToken::WHITESPACE };
+
             // TODO: énumération incomplète, il reste encore à détecter et à valider
             // les types de tokens suivants:
             // - string
             // - number
-            // - whitespace
         }
 
         return { JsonToken::UNEXPECTED };
@@ -130,6 +136,20 @@ private:
                 return false;
         }
         return true;
+    }
+    void consumeWhitespace() {
+        // tant que l'on peut lire des caractères blanc, on poursuivra
+        // la lecture.  On s'arrête si le flux est épuisé, ou si le
+        // dernier caractère lu n'est pas blanc.  Dans ce cas on garde
+        // ce caractère pour une lecture ultérieur; on ne le consomme pas.
+        while (charReader.advance()) {
+            char const c = charReader.current();
+            if (c == ' ' || c == '\t' || c == '\r' || c == '\n')
+                continue;
+
+            charReader.storeLast();
+            break;
+        }
     }
 };
 
