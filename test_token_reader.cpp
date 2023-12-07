@@ -35,3 +35,56 @@ int main(int, char*[])
             break;
     }
 }
+
+// Exemples d'entrée et de sorties de ce programme (première ligne donnant l'entrée):
+// $ ./test_token_reader.prg
+
+// {"hello": 1, "world": 2}
+// OBJECT_START
+// STRING_VALUE
+// COLON
+// WHITESPACE
+// NUMBER_VALUE
+// COMMA
+// WHITESPACE
+// STRING_VALUE
+// COLON
+// WHITESPACE
+// NUMBER_VALUE
+// OBJECT_END
+
+// [1, null, -2, false, "bilal", 0, "", true, {}, []]
+// WHITESPACE
+// ARRAY_START
+// NUMBER_VALUE
+// COMMA
+// WHITESPACE
+// NULL_VALUE
+// COMMA
+// WHITESPACE
+// NUMBER_VALUE
+// COMMA
+// WHITESPACE
+// BOOLEAN_VALUE
+// COMMA
+// WHITESPACE
+// STRING_VALUE
+// COMMA
+// WHITESPACE
+// NUMBER_VALUE
+// COMMA
+// WHITESPACE
+// STRING_VALUE
+// COMMA
+// WHITESPACE
+// BOOLEAN_VALUE
+// COMMA
+// WHITESPACE
+// OBJECT_START
+// OBJECT_END
+// COMMA
+// WHITESPACE
+// ARRAY_START
+// ARRAY_END
+// ARRAY_END
+
