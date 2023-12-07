@@ -39,3 +39,11 @@ BEGIN_OBJECT, on s'attend une des ces suites :
 
 On peut aussi s'orienter sur une machine à état, mais je préfère commencer avec
 une structuration simple.
+
+---
+
+Ayant écrit une petite partie de code, il est indispendable de pouvoir tester très tôt si le
+code en question fonctionne comme souhaité.  Quelques tests s'avéreront extrêmement utiles.
+
+Je mets les parties en commun dans un en-tête, disons "json_validator.hpp", et j'implémente
+quelques tests dans des programmes comme "test_char_reader.cpp" et "test_json_lexer.cpp".
