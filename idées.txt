@@ -13,3 +13,29 @@ Première contrainte dans l'énoncé du test : pas d'usage des Regex.  C'est un 
 puissant, mais je pense que l'on peut écrire un validateur assez simple et robuste sans
 expressions régulières.
 
+
+Je réduis d'abord la complexité du problème à un sous-ensemble raisonnable, tout en gardant
+la possibilité d'étendre le validateur pour couvrir l'intégralité de la syntaxe JSON.
+
+Dans un premier temps, j'ignore les encodages (UTF-8, UTF-16, ...), je suppose que l'entrée
+stdin est décomposable en octets que l'on va parser un à un.  On peut restructurer le code
+par la suite pour travailler sur des codepoints, et insérer un décodeur UTF-8 à l'entrée
+standard qui fournira un flux de codepoints au validateur.
+
+Autre chose, je pense procéder à « deux niveaux », je m'explique :
+
+* un niveau d'analyse lexicale, où un flux de caractères est pris en entrée pour générer
+des tokens (c'est à ce niveau par exemple que la suite de 4 caractères « 12.3 » est lue
+comme un nombre, et que la suite de 4 caractères « true » est lue comme un littéral booléen.
+Les éléments comme les symboles « [ » et « { » seront considérés comme des délimiteurs
+spéciaux (dans le code on les nommera par exemple BEGIN_ARRAY et BEGIN_OBJECT par exemple).
+
+* un niveau d'analyse syntaxique, où ce sont les tokens qui sont pris en entrée et que leur
+succession est analysée selon ce qui est attendu, par exemple, si l'on rencontre un token
+BEGIN_OBJECT, on s'attend une des ces suites :
+
+    - STRING suivi de COLON suivi de VALUE (cette suite peut être dénommée KEY_VALUE)
+    - END_OBJECT, ou si une COMMA est présente, c'est une autre KEY_VALUE qui est attendue
+
+On peut aussi s'orienter sur une machine à état, mais je préfère commencer avec
+une structuration simple.
