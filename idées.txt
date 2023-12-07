@@ -1,0 +1,15 @@
+L'objectif principal est de créer un validateur JSON.  C'est donc un programme qui va
+lire en entrée standard le contenu d'un (éventuel) document JSON, et répondre par VRAI
+ou FAUX selon que le document est correctement formaté selon la syntaxe JSON.
+
+Il n'est pas nécessaire de créer un structure de données représentant le document JSON,
+mais juste de valider la syntaxe.
+
+J'ai déjà eu l'occasion de visiter la page https://www.json.org/json-en.html.  Le format
+JSON a été créé par Douglas Crockford (très connu dans le monde du JavaScript), et pour
+l'anecdote il a pu faire tenir la syntaxe JSON sur une simple carte de visite.
+
+Première contrainte dans l'énoncé du test : pas d'usage des Regex.  C'est un outil très
+puissant, mais je pense que l'on peut écrire un validateur assez simple et robuste sans
+expressions régulières.
+
