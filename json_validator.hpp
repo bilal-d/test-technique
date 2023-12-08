@@ -241,15 +241,16 @@ struct JsonParser
     : tokenReader(input), value(), stored(false) {}
 
     bool validate() {
-        if (nextToken().type == JsonToken::END_OF_STREAM)
-            return true;
-
-        storeLast();
+        // Un document JSON valide doit contenir exactement une valeur
+        // (un nombre, un texte, une constante, un tableau ou un objet)
         if (!parseValue())
             return false;
 
+        // Après avoir parsé cette valeur, le flux d'entrée doit s'arrêter
         if (nextToken().type != JsonToken::END_OF_STREAM)
             return false;
+
+        // Le parsing s'est déroulé comme attendu, le document est valide
         return true;
     }
 
